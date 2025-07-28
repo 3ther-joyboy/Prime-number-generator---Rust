@@ -1,4 +1,7 @@
 Cargo.lock
+
+*.csv
+
 # Kinda no clue what does Cargo.lock do, but its generated while compiling..
 
 debug
