@@ -1,10 +1,10 @@
 use std::time::Instant;
+
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use std::fs::read_to_string;
 use std::fs::OpenOptions;
-
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let file_name = "primes.csv";
@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         file = File::create(file_name)?;
     }
 
-     search_for_primes(file,primes, index);
+    search_for_primes(file,primes, index);
     Ok(())
 }
 
@@ -38,11 +38,11 @@ fn column_from_csv(line: String, mut column: u32) -> String {
             if column == 0 {
                 return line[start..i].to_string();
             }
-            start = i+1;
+            start = i+1; // Excludes "," character
         }
 
     }
-    line[start..].to_string()
+    line[start..].to_string() // Returns last column
 }
 fn load( primes: &mut Vec<u32>,index: &mut u32, filename: &str) {
     for line in read_to_string(filename).unwrap().lines() {
@@ -66,12 +66,14 @@ fn search_for_primes(mut file: File,mut primes: Vec<u32>,mut index: u32) {
         }
         if !divaidible {
             primes.push(index);
-            let _ = file.write(
-                        {
-                            format!("{},{:?}\n",index.to_string(), last_prime.elapsed().as_secs_f64()*1000.0)
-                        }.as_bytes()
-                    );
-            print!("\rPrime: {}\t Time since last: {:?}\t Count: {}",index.to_string(),last_prime.elapsed().as_secs_f64()*1000.0,primes.len());
+            let time = last_prime.elapsed().as_secs_f64()*1000.0;
+
+
+
+            let _ = file.write({
+                            format!("{},{:?}\n",index.to_string(), time)
+                        }.as_bytes());
+            print!("\rPrime: {}\t Time since last: [ms] {:?}\t\t Count: {}",index.to_string(),time,primes.len());
 
             last_prime = Instant::now();
         }
@@ -82,21 +84,20 @@ fn search_for_primes(mut file: File,mut primes: Vec<u32>,mut index: u32) {
 mod tests {
     use super::*;
 
-
     #[test]
     fn csv_search_first() {
         let line: String = String::from("42,ahoj,404");
-        assert_eq!(column_from_csv(line.clone(),0),"42");
+        assert_eq!(column_from_csv(line,0),"42");
     }
     #[test]
     fn csv_search_middle() {
         let line: String = String::from("42,ahoj,404");
-        assert_eq!(column_from_csv(line.clone(),1),"ahoj");
+        assert_eq!(column_from_csv(line,1),"ahoj");
     }
     #[test]
     fn csv_search_last() {
         let line: String = String::from("42,ahoj,404");
-        assert_eq!(column_from_csv(line.clone(),2),"404");
+        assert_eq!(column_from_csv(line,2),"404");
     }
 
 
